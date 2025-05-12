@@ -100,25 +100,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        SliverAppBar(
-          expandedHeight: 200,
-          floating: false,
-          pinned: true,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    CupertinoColors.activeBlue,
-                    CupertinoColors.activeBlue.withOpacity(0.8),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
         SliverToBoxAdapter(
           child: FadeTransition(
             opacity: _fadeAnimation,

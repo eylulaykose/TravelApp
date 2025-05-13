@@ -22,6 +22,10 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
     'assets/amsterdam.jpg',
     'assets/roma.jpg',
     'assets/venedik.jpg',
+    'assets/istanbul.jpg',
+    'assets/kos.jpg',
+    'assets/chicago.jpg',
+    'assets/ankara.jpg',
   ];
 
   @override

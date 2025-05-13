@@ -45,6 +45,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           'name': parts[0],
           'location': parts[1],
           'description': parts[2],
+          'image': parts.length > 3 ? parts[3] : 'assets/city.png',
         };
       }).toList();
     });
@@ -107,9 +108,19 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ListTile(
-                      title: Text(favorite['name']!),
+                      title: Text(
+                        favorite['name']!,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
                       subtitle: Text(
-                          '${favorite['location']} - ${favorite['description']}'),
+                        '${favorite['location']} - ${favorite['description']}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                        ),
+                      ),
                       trailing: IconButton(
                         icon: const Icon(Icons.favorite, color: Colors.red),
                         onPressed: () async {

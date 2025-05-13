@@ -6,6 +6,7 @@ import 'favorites_screen.dart';
 import 'add_destination_screen.dart';
 import '../data/database_helper.dart';
 import 'profile_screen.dart';
+import '../data/destinations_data.dart';
 
 class ExploreScreen extends StatefulWidget {
   final Function()? onPlaceVisited;
@@ -24,6 +25,7 @@ class ExploreScreenState extends State<ExploreScreen> {
   Set<String> _visitedPlaces = {};
   Set<String> _favoritePlaces = {};
   int? _expandedIndex;
+  int _favoriteCount = 0;
   List<Map<String, String>> destinations = [
     {
       'name': 'Paris',
@@ -67,6 +69,7 @@ class ExploreScreenState extends State<ExploreScreen> {
   void initState() {
     super.initState();
     _loadVisitedPlaces();
+    _loadFavorites();
     Future.delayed(const Duration(milliseconds: 300), () {
       setState(() {
         _opacity = 1.0;
@@ -79,6 +82,40 @@ class ExploreScreenState extends State<ExploreScreen> {
     setState(() {
       _visitedPlaces = visited.map((e) => '${destinations[e['destinationId']]['name']}|${destinations[e['destinationId']]['location']}|${destinations[e['destinationId']]['description']}').toSet();
     });
+  }
+
+  Future<void> _loadFavorites() async {
+    final favorites = await DestinationsData.getFavorites();
+    setState(() {
+      _favoritePlaces = favorites.toSet();
+      _favoriteCount = favorites.length;
+    });
+  }
+
+  Future<void> _toggleFavorite(Map<String, String> destination) async {
+    final placeString = '${destination['name']}|${destination['location']}|${destination['description']}|${destination['image']}';
+    setState(() {
+      if (_favoritePlaces.contains(placeString)) {
+        _favoritePlaces.remove(placeString);
+        _favoriteCount--;
+        FavoritesScreen.removeFavorite(destination);
+      } else {
+        _favoritePlaces.add(placeString);
+        _favoriteCount++;
+        FavoritesScreen.addFavorite(destination);
+      }
+    });
+  }
+
+  void _navigateToFavorites() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const FavoritesScreen(),
+      ),
+    );
+    // Reload favorites when returning from FavoritesScreen
+    _loadFavorites();
   }
 
   Future<void> _markAsVisited(Map<String, String> destination) async {
@@ -109,6 +146,11 @@ class ExploreScreenState extends State<ExploreScreen> {
     return _visitedPlaces.contains(placeString);
   }
 
+  bool _isFavorite(Map<String, String> destination) {
+    final placeString = '${destination['name']}|${destination['location']}|${destination['description']}|${destination['image']}';
+    return _favoritePlaces.contains(placeString);
+  }
+
   void addNewDestination(Map<String, String> destination) {
     setState(() {
       destinations.add(destination);
@@ -121,6 +163,40 @@ class ExploreScreenState extends State<ExploreScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Explore Destinations'),
+        actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.favorite),
+                onPressed: _navigateToFavorites,
+              ),
+              if (_favoriteCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$_favoriteCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,8 +215,7 @@ class ExploreScreenState extends State<ExploreScreen> {
               itemBuilder: (context, index) {
                 final destination = destinations[index];
                 final isVisited = _isVisited(destination);
-                final placeString = '${destination['name']}|${destination['location']}|${destination['description']}';
-                final isFavorite = _favoritePlaces.contains(placeString);
+                final isFavorite = _isFavorite(destination);
                 final isExpanded = _expandedIndex == index;
 
                 if (isExpanded) {
@@ -174,17 +249,7 @@ class ExploreScreenState extends State<ExploreScreen> {
                                     isFavorite ? Icons.favorite : Icons.favorite_border,
                                     color: isFavorite ? Colors.red : null,
                                   ),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (isFavorite) {
-                                        _favoritePlaces.remove(placeString);
-                                        FavoritesScreen.removeFavorite(destination);
-                                      } else {
-                                        _favoritePlaces.add(placeString);
-                                        FavoritesScreen.addFavorite(destination);
-                                      }
-                                    });
-                                  },
+                                  onPressed: () => _toggleFavorite(destination),
                                 ),
                               ),
                               Padding(
@@ -236,17 +301,7 @@ class ExploreScreenState extends State<ExploreScreen> {
                             isFavorite ? Icons.favorite : Icons.favorite_border,
                             color: isFavorite ? Colors.red : null,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              if (isFavorite) {
-                                _favoritePlaces.remove(placeString);
-                                FavoritesScreen.removeFavorite(destination);
-                              } else {
-                                _favoritePlaces.add(placeString);
-                                FavoritesScreen.addFavorite(destination);
-                              }
-                            });
-                          },
+                          onPressed: () => _toggleFavorite(destination),
                         ),
                         onTap: () {
                           setState(() {
